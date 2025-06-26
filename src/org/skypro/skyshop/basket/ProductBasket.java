@@ -13,7 +13,8 @@ public class ProductBasket {
     private final Map<String, List<Product>> productsMap = new HashMap<>();
 
     public void addProduct(Product product) {
-        productsMap.computeIfAbsent(product.getName(), k -> new ArrayList<>()).add(product);
+        productsMap.computeIfAbsent(product.getName().toLowerCase(),
+                k -> new ArrayList<>()).add(product);
     }
 
     public List<Product> removeProductsByName(String name) {
@@ -33,12 +34,14 @@ public class ProductBasket {
             return;
         }
 
-        productsMap.forEach((name, products) ->
-                products.forEach(product ->
+        productsMap.values().stream()
+                .flatMap(List::stream)
+                .forEach(product ->
                         System.out.println(product.getName() + ": " + product.getPrice())
-                )
-        );
+                );
+
         System.out.println("Итого: " + getTotalPrice());
+        System.out.println("Специальных товаров: " + getSpecialCount());
     }
 
     public boolean containsProduct(String productName) {
@@ -47,5 +50,12 @@ public class ProductBasket {
 
     public void clearBasket() {
         productsMap.clear();
+    }
+
+    private long getSpecialCount() {
+        return productsMap.values().stream()
+                .flatMap(List::stream)
+                .filter(Product::isSpecial)
+                .count();
     }
 }
