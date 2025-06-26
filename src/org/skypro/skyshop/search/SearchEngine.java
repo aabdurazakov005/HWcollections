@@ -17,18 +17,20 @@ public class SearchEngine {
 
     public Set<Searchable> search(String query) {
         if (query == null || query.isBlank()) {
-            return Collections.emptySortedSet();
+            return new TreeSet<>(createComparator());
         }
 
         String lowerQuery = query.toLowerCase();
 
-        Comparator<Searchable> lengthThenNaturalComparator = Comparator
-                .comparingInt((Searchable s) -> s.getName().length())
-                .reversed()
-                .thenComparing(Searchable::getName);
-
         return searchables.stream()
+                .filter(Objects::nonNull)
                 .filter(item -> item.getSearchTerm().toLowerCase().contains(lowerQuery))
-                .collect(Collectors.toCollection(() -> new TreeSet<>(lengthThenNaturalComparator)));
+                .collect(Collectors.toCollection(() -> new TreeSet<>(createComparator())));
+    }
+
+    private Comparator<Searchable> createComparator() {
+        return Comparator
+                .comparingInt((Searchable s) -> s.getName().length()).reversed()
+                .thenComparing(Searchable::getName, String.CASE_INSENSITIVE_ORDER);
     }
 }
